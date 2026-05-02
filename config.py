@@ -10,10 +10,6 @@ class Config:
     DEBUG = False
     TESTING = False
     DATABASE_FILE = os.environ.get('DATABASE_FILE', 'data.toon')
-    
-    # Ollama Configuration
-    OLLAMA_URL = os.environ.get('OLLAMA_URL', 'http://localhost:11434/api/generate')
-    OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5-coder:1.5b')
 
 class DevelopmentConfig(Config):
     """Development configuration."""

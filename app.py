@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from toon_db import ToonDB
 from datetime import datetime
-import requests
 import os
 import logging
 from config import config_by_name
@@ -23,30 +22,19 @@ logger = logging.getLogger(__name__)
 # Initialize Database with config
 db = ToonDB(filename=app.config['DATABASE_FILE'])
 
-def check_content_safety(text):
-    """Checks content using local LLM for safety."""
-    prompt = f"""Evaluate the following text. If it contains tampering-based content or severe spam, respond with exactly the word 'UNSAFE'. Otherwise, respond with exactly the word 'SAFE'. Only output SAFE or UNSAFE.
+import re
 
-Text: {text}
-"""
-    try:
-        response = requests.post(app.config['OLLAMA_URL'], json={
-            "model": app.config['OLLAMA_MODEL'],
-            "prompt": prompt,
-            "stream": False,
-            "keep_alive": 0
-        }, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json().get("response", "").strip().upper()
-            if "UNSAFE" in result:
-                logger.warning(f"Safety check failed for text: {text[:50]}...")
-                return False
-            return True
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ollama connection error: {e}")
-        return True # Fallback for demo
+def check_content_safety(text):
+    """
+    Checks for common coding special characters to prevent injection/code snippets.
+    Removes the heavy LLM dependency.
+    """
+    # Define common coding characters that are restricted
+    restricted_pattern = r'[<>{}\[\];&\\|]'
     
+    if re.search(restricted_pattern, text):
+        logger.warning(f"Restricted characters detected in input: {text[:50]}...")
+        return False
     return True
 
 @app.route('/')
@@ -117,7 +105,7 @@ def add_quote():
             return redirect(url_for('add_quote'))
 
         if not check_content_safety(text):
-            flash("Content rejected: The AI detected tampering or spam.", "error")
+            flash("Content rejected: Restricted coding characters detected (< > { } [ ] ; & \\ |).", "error")
             return redirect(url_for('add_quote'))
             
         date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -147,7 +135,7 @@ def add_comment(quote_id):
         return redirect(url_for('index'))
         
     if not check_content_safety(text):
-        flash("Comment rejected: AI detected tampering or spam.", "error")
+        flash("Comment rejected: Restricted coding characters detected.", "error")
         return redirect(url_for('index'))
         
     date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

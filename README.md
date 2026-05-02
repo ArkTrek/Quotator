@@ -7,7 +7,7 @@ Quotator is a premium, mobile-friendly Flask application designed for discoverin
 ## ✨ Features
 
 - **Ink-Pen Aesthetic**: A beautiful UI featuring parchment textures, elegant typography (Caveat & Playfair Display), and realistic post-it note quote cards.
-- **AI-Powered Safety**: Utilizes a local LLM (Ollama) to perform real-time safety checks on all user-submitted quotes and comments.
+- **Input Validation**: Simple, efficient checking for restricted coding characters to prevent injection.
 - **Interactive System**: Like and comment on your favorite quotes.
 - **Guest Access**: Seamlessly browse and interact even without a formal account.
 - **Mobile Optimized**: Fully responsive design with cascading transitions and custom mobile UI refinements.
@@ -18,7 +18,6 @@ Quotator is a premium, mobile-friendly Flask application designed for discoverin
 ### Prerequisites
 
 - Python 3.8+
-- [Ollama](https://ollama.com/) (with `qwen2.5-coder:1.5b` model installed)
 
 ### Local Development
 
@@ -59,7 +58,6 @@ docker-compose up --build -d
 - **Backend**: Flask (Python)
 - **Production Server**: Waitress (Windows) / Gunicorn (Linux)
 - **Database**: TOON Data Manager (`python-toon`)
-- **AI**: Ollama API (`qwen2.5-coder:1.5b`)
 - **Frontend**: HTML5, Vanilla CSS3, JavaScript
 - **Icons**: Phosphor Icons
 
