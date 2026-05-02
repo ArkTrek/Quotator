@@ -2,7 +2,7 @@
 
 Quotator is a premium, mobile-friendly Flask application designed for discovering, sharing, and discussing world-famous quotes. Featuring a unique "Ink Pen on Parchment" aesthetic, it combines modern functionality with a classic, hand-drawn feel.
 
-![Quotator Sample](screenshots\ss-sample.png)
+![Quotator Sample](screenshots/ss-sample.png)
 
 ## ✨ Features
 
