@@ -20,11 +20,11 @@ Quotator is a premium, mobile-friendly Flask application designed for discoverin
 - Python 3.8+
 - [Ollama](https://ollama.com/) (with `qwen2.5-coder:1.5b` model installed)
 
-### Installation
+### Local Development
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/arktrek/Quotator.git
+   git clone https://github.com/ArkTrek/Quotator.git
    cd Quotator
    ```
 
@@ -35,9 +35,10 @@ Quotator is a premium, mobile-friendly Flask application designed for discoverin
    pip install -r requirements.txt
    ```
 
-3. Ensure Ollama is running and pull the model:
+3. Setup environment variables:
    ```bash
-   ollama pull qwen2.5-coder:1.5b
+   cp .env.example .env
+   # Edit .env with your secret key and settings
    ```
 
 4. Run the application:
@@ -45,20 +46,35 @@ Quotator is a premium, mobile-friendly Flask application designed for discoverin
    python app.py
    ```
 
-5. Access the app at `http://localhost:5000` (or your local IP for mobile access).
+### 🐳 Production Deployment (Docker)
 
-## 🛠️ Built With
+The project is production-ready with Docker and `waitress`/`gunicorn`:
+
+```bash
+docker-compose up --build -d
+```
+
+## 🛠️ Tech Stack
 
 - **Backend**: Flask (Python)
+- **Production Server**: Waitress (Windows) / Gunicorn (Linux)
 - **Database**: TOON Data Manager (`python-toon`)
 - **AI**: Ollama API (`qwen2.5-coder:1.5b`)
 - **Frontend**: HTML5, Vanilla CSS3, JavaScript
 - **Icons**: Phosphor Icons
 
+## 🔒 Security & Production Grade Features
+
+- **Environment Configuration**: Uses `python-dotenv` and separate `config.py` for dev/prod environments.
+- **Structured Logging**: Implementation of Python's `logging` module for better observability.
+- **Production WSGI**: Integrated with `waitress` and `gunicorn` for robust serving.
+- **Containerization**: Full Docker support for consistent deployments.
+- **Secret Management**: Sensitive keys are kept out of the source code.
+
 ## 👤 Author
 
 **ARPIT RAMESAN**
-- GitHub: [@arktrek](https://github.com/arktrek)
+- GitHub: [@ArkTrek](https://github.com/ArkTrek)
 - Portfolio: [Arpit Ramesan](https://arpitramesansportfolio.pythonanywhere.com/)
 - Email: arpitramesan777@gmail.com
 

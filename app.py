@@ -3,39 +3,49 @@ from toon_db import ToonDB
 from datetime import datetime
 import requests
 import os
+import logging
+from config import config_by_name
 
+# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'super_secret_premium_key'
 
-db = ToonDB()
+# Load configuration based on environment
+env = os.environ.get('FLASK_ENV', 'dev')
+app.config.from_object(config_by_name[env])
 
-# Ollama settings
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "qwen2.5-coder:1.5b" # Chosen due to 8GB system RAM limits
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Initialize Database with config
+db = ToonDB(filename=app.config['DATABASE_FILE'])
 
 def check_content_safety(text):
+    """Checks content using local LLM for safety."""
     prompt = f"""Evaluate the following text. If it contains tampering-based content or severe spam, respond with exactly the word 'UNSAFE'. Otherwise, respond with exactly the word 'SAFE'. Only output SAFE or UNSAFE.
 
 Text: {text}
 """
     try:
-        response = requests.post(OLLAMA_URL, json={
-            "model": OLLAMA_MODEL,
+        response = requests.post(app.config['OLLAMA_URL'], json={
+            "model": app.config['OLLAMA_MODEL'],
             "prompt": prompt,
             "stream": False,
-            "keep_alive": 0  # Unloads model immediately from RAM after use
+            "keep_alive": 0
         }, timeout=30)
         
         if response.status_code == 200:
             result = response.json().get("response", "").strip().upper()
             if "UNSAFE" in result:
+                logger.warning(f"Safety check failed for text: {text[:50]}...")
                 return False
             return True
     except requests.exceptions.RequestException as e:
-        print(f"Ollama connection error: {e}")
-        # Fallback if Ollama is not running (you could choose to block or allow, we'll allow for demo, but print error)
-        # Ideally, we should reject or warn the user.
-        return True
+        logger.error(f"Ollama connection error: {e}")
+        return True # Fallback for demo
     
     return True
 
@@ -57,6 +67,7 @@ def login():
             db.create_user(guest_name, "", is_guest=True)
             session['username'] = guest_name
             session['is_guest'] = True
+            logger.info(f"Guest login: {guest_name}")
             return redirect(url_for('index'))
 
         if not username or not password:
@@ -67,6 +78,7 @@ def login():
             if db.create_user(username, password, is_guest=False):
                 session['username'] = username
                 session['is_guest'] = False
+                logger.info(f"New user registered: {username}")
                 return redirect(url_for('index'))
             else:
                 flash("Username already exists.", "error")
@@ -75,6 +87,7 @@ def login():
             if user and user.get('password') == password:
                 session['username'] = username
                 session['is_guest'] = user.get('is_guest', False)
+                logger.info(f"User logged in: {username}")
                 return redirect(url_for('index'))
             else:
                 flash("Invalid credentials.", "error")
@@ -103,9 +116,7 @@ def add_quote():
             flash("Quote and author are required.", "error")
             return redirect(url_for('add_quote'))
 
-        # AI Check
-        is_safe = check_content_safety(text)
-        if not is_safe:
+        if not check_content_safety(text):
             flash("Content rejected: The AI detected tampering or spam.", "error")
             return redirect(url_for('add_quote'))
             
@@ -135,8 +146,7 @@ def add_comment(quote_id):
         flash("Comment cannot be empty.", "error")
         return redirect(url_for('index'))
         
-    is_safe = check_content_safety(text)
-    if not is_safe:
+    if not check_content_safety(text):
         flash("Comment rejected: AI detected tampering or spam.", "error")
         return redirect(url_for('index'))
         
@@ -146,9 +156,16 @@ def add_comment(quote_id):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    # Ensure templates and static folders exist
+    # Ensure necessary folders exist
     os.makedirs('templates', exist_ok=True)
     os.makedirs('static/css', exist_ok=True)
     os.makedirs('static/js', exist_ok=True)
     
-    app.run(host='0.0.0.0', debug=True, port=5000)
+    # Run server
+    # Use waitress for production-grade serving on Windows
+    if os.environ.get('FLASK_ENV') == 'prod':
+        from waitress import serve
+        logger.info("Starting production server with waitress on port 5000...")
+        serve(app, host='0.0.0.0', port=5000)
+    else:
+        app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=5000)
