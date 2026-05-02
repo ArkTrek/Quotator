@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="feed-header">
+    <h1 class="ink-text">Discover Quotes</h1>
+    <p>Words of wisdom from various authors.</p>
+</div>
+
+<div class="quotes-grid">
+    {% for quote in quotes %}
+        <div class="quote-card">
+            <div class="quote-content">
+                <i class="ph ph-quotes quote-icon"></i>
+                <p class="quote-text">"{{ quote.text }}"</p>
+            </div>
+            <div class="quote-meta">
+                <span class="quote-author">- {{ quote.author }}</span>
+                <span class="quote-date">{{ quote.date }}</span>
+            </div>
+            <div class="quote-actions">
+                {% set is_liked = current_user in quote.likes %}
+                <button class="btn-like {% if is_liked %}liked{% endif %}" onclick="toggleLike('{{ quote.id }}', this)" {% if not current_user %}disabled title="Login to like"{% elif current_user == quote.added_by %}disabled title="Cannot like your own quote"{% endif %}>
+                    <i class="ph-fill ph-heart"></i>
+                    <span class="like-count">{{ quote.likes|length }}</span>
+                </button>
+                <span class="added-by">Added by {{ quote.added_by }}</span>
+            </div>
+            <div class="comments-section">
+                <h4>Comments ({{ quote.comments|length if quote.comments else 0 }})</h4>
+                <div class="comments-list">
+                    {% for comment in quote.comments %}
+                        <div class="comment">
+                            <p>{{ comment.text }}</p>
+                            <small>- {{ comment.added_by }} at {{ comment.date }}</small>
+                        </div>
+                    {% else %}
+                        <p class="no-comments">No comments yet. Be the first!</p>
+                    {% endfor %}
+                </div>
+                {% if current_user %}
+                <form class="comment-form" action="{{ url_for('add_comment', quote_id=quote.id) }}" method="POST">
+                    <input type="text" name="text" placeholder="Add a comment..." required>
+                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                </form>
+                {% else %}
+                <p class="login-prompt">Login to comment.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state paper-element">
+            <i class="ph ph-ghost"></i>
+            <h3>No quotes found</h3>
+            <p>Be the first to share a quote with the world!</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

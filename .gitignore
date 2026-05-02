@@ -1,0 +1,17 @@
+# Virtual Environments
+pluto/
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+data.toon
+
+# IDEs
+.vscode/
+.idea/

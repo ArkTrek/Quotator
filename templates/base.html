@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quotator - Discover, share, and discuss premium world famous quotes with an elegant ink-pen aesthetic. AI-verified for your safety.">
+    <meta name="keywords" content="quotes, inspiration, literature, world famous quotes, quotator, ink-pen theme">
+    <meta name="author" content="Arpit Ramesan">
+    <meta property="og:title" content="Quotator - Premium Quotes">
+    <meta property="og:description" content="Discover, share, and discuss premium world famous quotes with an elegant ink-pen aesthetic.">
+    <meta property="og:type" content="website">
+    <title>{% block title %}Quotator - Premium Quotes{% endblock %}</title>
+    <!-- Ink Pen Theme Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Phosphor Icons for elegant UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div id="page-loader" class="page-loader">
+        <div class="loader-content">
+            <i class="ph ph-pen-nib loader-icon"></i>
+            <span class="loader-text">Dipping pen in ink...</span>
+        </div>
+    </div>
+    <div class="paper-texture"></div>
+    
+    <nav class="navbar paper-element">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="brand">
+                <i class="ph ph-quotes"></i> Quotator
+            </a>
+            <div class="nav-links">
+                {% if session.username %}
+                    <span class="greeting">Welcome, {{ session.username }}!</span>
+                    {% if not session.is_guest %}
+                        <a href="{{ url_for('add_quote') }}" class="btn btn-primary btn-sm">Add Quote</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} paper-element">
+                            {% if category == 'error' %}
+                                <i class="ph ph-warning-circle"></i>
+                            {% else %}
+                                <i class="ph ph-check-circle"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="site-footer paper-element">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <i class="ph ph-quotes"></i> Quotator
+            </div>
+            <p class="footer-tagline">Preserving the world's wisdom in ink.</p>
+            <div class="footer-links">
+                <a href="https://arpitramesansportfolio.pythonanywhere.com/" target="_blank"><i class="ph ph-briefcase"></i> Portfolio</a>
+                <a href="https://github.com/arktrek" target="_blank"><i class="ph ph-github-logo"></i> GitHub</a>
+                <a href="mailto:arpitramesan777@gmail.com"><i class="ph ph-envelope"></i> Email</a>
+            </div>
+            <p class="copyright">&copy; 2026 ARPIT RAMESAN. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
